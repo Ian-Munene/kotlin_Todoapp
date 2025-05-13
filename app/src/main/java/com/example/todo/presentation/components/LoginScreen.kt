@@ -11,6 +11,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.google.firebase.Firebase
+import com.google.firebase.auth.auth
 
 
 @Composable
@@ -44,7 +46,18 @@ fun LoginScreen(navController: NavController) {
             Button(onClick = {
                 if (email.isBlank() || password.isBlank()) {
                     error = "Email and password are required"
-                } else { }
+                } else {
+                    Firebase.auth.signInWithEmailAndPassword(email,
+                        password).addOnCompleteListener{
+                            task -> if (task.isSuccessful) {
+                                    navController.
+                                    navigate("dashboard")
+                            } else {
+                                error = task.exception?.message
+                            }
+                    }
+                    }
+
             }) {
                 Text("Login")
             }
