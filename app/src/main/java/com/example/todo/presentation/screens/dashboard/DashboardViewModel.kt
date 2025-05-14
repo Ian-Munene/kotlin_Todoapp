@@ -1,8 +1,8 @@
 package com.example.todo.presentation.screens.dashboard
 
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.todo.data.model.TodoItem
 import com.example.todo.data.repository.TodoRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -79,14 +79,20 @@ class DashboardViewModel @Inject constructor(
     }
 
     // function to add data
-    fun addToDO (title: String, description: String, tasker:String){
+    fun addToDO (title: String, description: String,
+                 tasker:String, imageUri: Uri?){
         viewModelScope.launch {
+            var imageUrl: String? = null
+            if(imageUri != null){
+                imageUrl = repository.uploadImage
+            }
             // we create the new Item
             val newTodo = TodoItem(
                 id = 0, title = title,
                 description = description, imageUri = null,
                 tasker = tasker, isCompleted = false
             )
+            // room db insert
             repository.insertTodo(newTodo)
         }
     }

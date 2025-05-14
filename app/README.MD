@@ -74,7 +74,11 @@ the VM , create a module class to provide the info.
 7. Get build - clean project 
 8. file - invalidate caches - check all checkboxes 
 
-
+### FIREBASE CRUD 
+1. Add dependencies for firebase database 
+implementation("com.google.firebase:firebase-database-ktx")
+   //firebase storage
+   implementation("com.google.firebase:firebase-storage")
 
 
 
