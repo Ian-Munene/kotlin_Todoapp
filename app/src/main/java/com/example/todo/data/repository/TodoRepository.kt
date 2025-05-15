@@ -61,7 +61,13 @@ class TodoRepositoryImpl(private val todoDao: TodoDAO) :
             "todo_images/${UUID.randomUUID()}.jpg")
         // push image to the folder above
         if (imageUri != null) {
-            imageRef.putFile(imageUri).await()
+            try{
+                val uploadTask = imageRef.putFile(imageUri).await()
+                return imageRef.downloadUrl.await().toString()
+            } catch (e: Exception){
+                throw Exception("Failed to upload image " +
+                        "${e.message}",e)
+            }
         }
         return imageRef.downloadUrl.await().toString()
     }

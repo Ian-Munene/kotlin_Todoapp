@@ -84,16 +84,18 @@ class DashboardViewModel @Inject constructor(
         viewModelScope.launch {
             var imageUrl: String? = null
             if(imageUri != null){
-                imageUrl = repository.uploadImage
+              //  imageUrl = repository.uploadImagetoFirebase(imageUri)
             }
             // we create the new Item
             val newTodo = TodoItem(
                 id = 0, title = title,
-                description = description, imageUri = null,
+                description = description, imageUri = imageUrl,
                 tasker = tasker, isCompleted = false
             )
             // room db insert
             repository.insertTodo(newTodo)
+            //firebase insert
+            repository.uploadToFirebase(newTodo)
         }
     }
 

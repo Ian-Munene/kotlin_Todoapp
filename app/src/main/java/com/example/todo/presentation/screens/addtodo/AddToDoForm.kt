@@ -102,7 +102,8 @@ fun AddToDoForm(
             }
             Button(onClick = {
                 if(title.isNotBlank()){
-                    viewModel.addToDO(title,description,tasker)
+                    viewModel.addToDO(title,description,
+                        tasker,imageUri)
                     onDismiss()
                 }
             }, enabled = title.isNotBlank()) {
