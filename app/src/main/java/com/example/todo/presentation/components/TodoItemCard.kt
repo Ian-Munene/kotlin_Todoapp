@@ -13,6 +13,9 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
@@ -23,6 +26,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -89,6 +93,19 @@ fun TodoItemCard(
                                 text = todo.tasker,
                         style = MaterialTheme.typography.labelSmall
                     )
+                }
+
+                Row( verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(start = 4.dp)){
+                      Button(onClick = {  }){
+                             Text(text = "Edit" , color = MaterialTheme.colorScheme.onPrimary)
+                      }
+
+                    Spacer(modifier = Modifier.width(8.dp))
+
+                    Button(onClick = {  }, colors = ButtonDefaults.buttonColors(containerColor = Color.Red)){
+                        Text(text = "Delete" , color = MaterialTheme.colorScheme.onPrimary)
+                    }
+
                 }
             }
 
