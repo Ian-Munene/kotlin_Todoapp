@@ -28,10 +28,11 @@ import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.example.todo.data.model.TodoItem
 import com.example.todo.presentation.components.DrawerContent
 import com.example.todo.presentation.components.TodoItemCard
-import com.example.todo.presentation.components.onCompleteChange
 import com.example.todo.presentation.screens.addtodo.AddToDoForm
+import com.example.todo.presentation.screens.addtodo.EditToDoForm
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.launch
 
@@ -41,11 +42,19 @@ import kotlinx.coroutines.launch
 fun DashboardScreen(
     navController: NavController,
     viewModel: DashboardViewModel = hiltViewModel()){
-    // fetch our todos from the viewmodel
+    // fetch our todos from the viewmodel -\> room
     val todos by viewModel.todos.collectAsState()
+    // fetch our firebase todos
+    val firebassetodos by viewModel.firebaseTodos.collectAsState()
     // to create a list of composables {listview}
     // add a dialog
     val showAddDialog = remember { mutableStateOf(false) }
+    // show edit dialog
+    val showEditDialog = remember {mutableStateOf(false)}
+    // selected to do
+    val todoBeingEdited = remember { mutableStateOf<TodoItem?>(
+        null
+    ) }
     // drawer state reference
     val drawerState = rememberDrawerState(initialValue =
     DrawerValue.Closed)
@@ -96,12 +105,22 @@ fun DashboardScreen(
            }
        ) { padding ->
            LazyColumn(modifier = Modifier.padding(padding)) {
-               items(todos){ todo -> TodoItemCard(
+              // use  todos variable to load items from room
+               // firebasetodos variable to load from firebase
+               items(firebassetodos){ todo -> TodoItemCard(
                    // passing info to the composable
                    todo = todo,
                    onCompleteChange= {
                        viewModel
-                           .toogleTodoCompletion(todo.id)}
+                           .toogleTodoCompletion(todo.id)},
+                   onEditClick = {
+                       // raise an alert dialog
+                       todoBeingEdited.value = it
+                       showEditDialog.value =  true
+                   },
+                   onDeleteClick =  {
+                       viewModel.deleteTodoFromFirebase(it)
+                   }
                )
                }
            }
@@ -122,6 +141,28 @@ fun DashboardScreen(
                    dismissButton = {}
                )
            }
+           // EDIT DIALOG
+           if(showEditDialog.value &&
+               todoBeingEdited.value != null){
+               // show pop up
+               AlertDialog(
+                   onDismissRequest = { showEditDialog.value = false},
+                   title = { Text("Edit Todo") },
+                   text = {
+                       EditToDoForm(
+                           todo = todoBeingEdited.value!!,
+                           onSubmit = {updatedTodo ->
+                               viewModel.updateTodoFromFirebase(
+                                   updatedTodo
+                               )
+                           },
+                           onDismiss = {showEditDialog.value= false}
+                       )
+                   },
+                   confirmButton = {}
+               )
+           }
+
        }
    }
    }

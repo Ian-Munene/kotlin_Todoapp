@@ -6,22 +6,42 @@ import com.example.todo.data.model.TodoItem
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.tasks.await
 import java.util.UUID
 
 interface TodoRepository{
     fun getAllTodos(): Flow<List<TodoItem>>
+    fun fetchtodosFromFirebase():Flow<List<TodoItem>>
     suspend fun getTodoById(id: Int): TodoItem?
     suspend fun insertTodo(todo: TodoItem)
     suspend fun deleteTodo(todo: TodoItem)
     suspend fun updateTodo(todo: TodoItem)
     suspend fun uploadToFirebase(todo: TodoItem)
     suspend fun uploadImagetoFirebase(imageUri: Uri?): String
+    suspend fun updateTodoFirebase(todo: TodoItem)
+    suspend fun deleteTodoFirebase(todo: TodoItem)
 }
 class TodoRepositoryImpl(private val todoDao: TodoDAO) :
         TodoRepository{
     override fun getAllTodos(): Flow<List<TodoItem>> {
         return todoDao.getAllTodos()
+    }
+
+    override  fun fetchtodosFromFirebase(): Flow<List<TodoItem>>
+    = flow{
+        val dbref = FirebaseDatabase.getInstance()
+            .reference.child("todos")
+        // snapshot , reads the data currently
+        val snapshot = dbref.get().await()
+        val todos  = mutableListOf<TodoItem>()
+        // now populate the above list ref. with the snapshot details
+        for(child in snapshot.children){
+            val todo = child.getValue(TodoItem::class.java)
+            todo?.let {todos.add(it)}
+        }
+        // expose the items to the viewmodel
+        emit(todos)
     }
 
     override suspend fun getTodoById(id: Int): TodoItem? {
@@ -47,8 +67,11 @@ class TodoRepositoryImpl(private val todoDao: TodoDAO) :
         // we target our db by name
         val newTodoRef = database.child("todos")
             .push()
+        // generate and capture the unique id from firebase
+        val firebaseId = newTodoRef.key?: return
+        val todoWithId =  todo.copy(firebase_id = firebaseId)
         // then we insert the data to realtime db
-        newTodoRef.setValue(todo)
+        newTodoRef.setValue(todoWithId)
     }
 
     // suspend function
@@ -70,6 +93,30 @@ class TodoRepositoryImpl(private val todoDao: TodoDAO) :
             }
         }
         return imageRef.downloadUrl.await().toString()
+    }
+
+    override suspend fun updateTodoFirebase(todo: TodoItem) {
+        val firebaseId = todo.firebase_id
+        if(firebaseId.isNotEmpty()){
+            // here we get a reference to the db in firebase
+            val dbref = FirebaseDatabase.getInstance().reference
+                .child("todos").child(firebaseId)
+            dbref.setValue(todo).await()
+        } else {
+            throw IllegalArgumentException("Firebase id is empty")
+        }
+    }
+
+    override suspend fun deleteTodoFirebase(todo: TodoItem) {
+        val firebaseId = todo.firebase_id
+        if(firebaseId.isNotEmpty()){
+            // here we get a reference to the db in firebase
+            val dbref = FirebaseDatabase.getInstance().reference
+                .child("todos").child(firebaseId)
+            dbref.removeValue().await()
+        } else {
+            throw IllegalArgumentException("Firebase id is empty")
+        }
     }
 
 }

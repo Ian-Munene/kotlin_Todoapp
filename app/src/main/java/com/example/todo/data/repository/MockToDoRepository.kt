@@ -7,13 +7,13 @@ import kotlinx.coroutines.flow.flowOf
 
 class MockToDoRepository : TodoRepository {
     private val todos  = mutableListOf(
-        TodoItem(1,1,"Buy Groceries","Milk",
+        TodoItem(1,"1","Buy Groceries","Milk",
             null,"Joseph", 2025,
             false),
-        TodoItem(2,2,"Finish Room DB","Todo",
+        TodoItem(2,"2","Finish Room DB","Todo",
             null,"Joseph", 2025,
             false),
-        TodoItem(3,3,"Carry out demos","Android demos",
+        TodoItem(3,"3","Carry out demos","Android demos",
             null,"Class", 2025,
             false)
     )
@@ -21,6 +21,11 @@ class MockToDoRepository : TodoRepository {
     override fun getAllTodos(): Flow<List<TodoItem>> {
         return flowOf(todos.toList())
     }
+
+    override fun fetchtodosFromFirebase(): Flow<List<TodoItem>> {
+       return flowOf(todos.toList())
+    }
+
     override suspend fun getTodoById(id: Int): TodoItem? {
         return todos.find {it.id  == id}
     }
@@ -44,6 +49,14 @@ class MockToDoRepository : TodoRepository {
     override suspend fun uploadImagetoFirebase(imageUri: Uri?): String {
         // here simulation for storage process
         return "mock.url"
+    }
+
+    override suspend fun updateTodoFirebase(todo: TodoItem) {
+        //
+    }
+
+    override suspend fun deleteTodoFirebase(todo: TodoItem) {
+        //
     }
 
 }
