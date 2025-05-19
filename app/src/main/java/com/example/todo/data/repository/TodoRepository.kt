@@ -3,9 +3,14 @@ package com.example.todo.data.repository
 import android.net.Uri
 import com.example.todo.data.dao.TodoDAO
 import com.example.todo.data.model.TodoItem
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 import com.google.firebase.storage.FirebaseStorage
+import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.tasks.await
 import java.util.UUID
@@ -28,21 +33,47 @@ class TodoRepositoryImpl(private val todoDao: TodoDAO) :
         return todoDao.getAllTodos()
     }
 
-    override  fun fetchtodosFromFirebase(): Flow<List<TodoItem>>
-    = flow{
-        val dbref = FirebaseDatabase.getInstance()
-            .reference.child("todos")
-        // snapshot , reads the data currently
-        val snapshot = dbref.get().await()
-        val todos  = mutableListOf<TodoItem>()
-        // now populate the above list ref. with the snapshot details
-        for(child in snapshot.children){
-            val todo = child.getValue(TodoItem::class.java)
-            todo?.let {todos.add(it)}
+    override fun fetchtodosFromFirebase(): Flow<List<TodoItem>> = callbackFlow{
+        val dbref = FirebaseDatabase.getInstance().reference.child("todos")
+        //create a listen to listen to any change in our child ref
+        val listener = object : ValueEventListener{
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val todos = mutableListOf<TodoItem>()
+                for (child in snapshot.children){
+                    val todo = child.getValue(TodoItem::class.java)
+                    todo?.let{todos.add(it)}
+                }
+                //coroutines flow , trysend handles any exception encounterd in processing
+                trySend(todos).isSuccess
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                close(error.toException())
+            }
+
         }
-        // expose the items to the viewmodel
-        emit(todos)
+        //add the listener to the db ref
+        dbref.addValueEventListener(listener)
+        //if app is not launched close the connection
+        awaitClose(){dbref.removeEventListener(listener)}
     }
+
+//.get() listens for data one , static implementation for fetching data
+//    override  fun fetchtodosFromFirebase(): Flow<List<TodoItem>>
+//    = flow{
+//        val dbref = FirebaseDatabase.getInstance()
+//            .reference.child("todos")
+//        // snapshot , reads the data currently
+//        val snapshot = dbref.get().await()
+//        val todos  = mutableListOf<TodoItem>()
+//        // now populate the above list ref. with the snapshot details
+//        for(child in snapshot.children){
+//            val todo = child.getValue(TodoItem::class.java)
+//            todo?.let {todos.add(it)}
+//        }
+//        // expose the items to the viewmodel
+//        emit(todos)
+//    }
 
     override suspend fun getTodoById(id: Int): TodoItem? {
        return todoDao.getTodoById(id)
