@@ -7,6 +7,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
@@ -104,6 +105,13 @@ fun DashboardScreen(
                }
            }
        ) { padding ->
+
+           // button -> redirect redirect to the screen with the list from the api
+           Button(
+               onClick ={
+                   navController.navigate("apiroute")
+               }
+           ) { Text("Go to List screen ")}
            LazyColumn(modifier = Modifier.padding(padding)) {
               // use  todos variable to load items from room
                // firebasetodos variable to load from firebase

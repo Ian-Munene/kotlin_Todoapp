@@ -5,8 +5,11 @@ import androidx.room.Room
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.example.todo.data.dao.TodoDAO
+import com.example.todo.data.repository.ApiRepository
 import com.example.todo.data.repository.TodoRepository
 import com.example.todo.data.repository.TodoRepositoryImpl
+import com.example.todo.data.services.TaskApiService
+import com.google.android.gms.tasks.Task
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -47,6 +50,16 @@ object AppModule {
     fun provideTodoDAO(database: AppDatabase): TodoDAO {
         return database.todoDao()
     }
+
+    @Provides
+    @Singleton
+    fun provideApiService(): TaskApiService = TaskApiService.create()
+
+
+    @Provides
+    @Singleton
+    fun provideApiRepository(apiService: TaskApiService) : ApiRepository
+    = ApiRepository(apiService)
 }
 
 
