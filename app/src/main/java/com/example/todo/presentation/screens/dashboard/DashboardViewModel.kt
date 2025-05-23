@@ -121,7 +121,9 @@ class DashboardViewModel @Inject constructor(
         FirebaseAuth.getInstance().sendPasswordResetEmail(email)
             .addOnCompleteListener { task ->
                 if(task.isSuccessful){
-                    onSuccess()
+                    onSuccess(
+
+                    )
                 }else{
                     onError(task.exception?.message?:"An Error occurred ")
                 }

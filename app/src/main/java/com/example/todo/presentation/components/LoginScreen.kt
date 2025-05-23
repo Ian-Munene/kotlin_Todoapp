@@ -41,7 +41,10 @@ fun LoginScreen(navController: NavController) {
 
             error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(8.dp))
+            TextButton(
+                onClick = {navController.navigate("forgotpassword")}
+            ) { Text("Forgot Password ?")}
 
             Button(onClick = {
                 if (email.isBlank() || password.isBlank()) {

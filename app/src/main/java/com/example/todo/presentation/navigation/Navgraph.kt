@@ -29,14 +29,14 @@ fun TodoNavGraph(navController: NavHostController){
 
           }
           composable ("forgotpassword"){
-              ForgotPassword(
-                  navController
-              )
+              ForgotPassword(onResetSuccess = {
+                  navController.popBackStack()
+              },navController)
           }
           composable ("apiroute"){
               ApiDashboard(navController)
           }
-          // here will define the addtoDo composable
+
 
       }
 
